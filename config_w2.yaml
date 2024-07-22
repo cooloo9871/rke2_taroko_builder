@@ -1,0 +1,13 @@
+server: https://masterip:9345
+node-name:
+  - "w2"
+token: my-shared-secret
+etcd-extra-env: TZ=Asia/Taipei
+kube-apiserver-extra-env: TZ=Asia/Taipei
+kube-controller-manager-extra-env: TZ=Asia/Taipei
+kube-proxy-extra-env: TZ=Asia/Taipei
+kube-scheduler-extra-env: TZ=Asia/Taipei
+cloud-controller-manager-extra-env: TZ=Asia/Taipei
+kubelet-arg:
+  - container-log-max-files=3
+  - container-log-max-size=10Mi
