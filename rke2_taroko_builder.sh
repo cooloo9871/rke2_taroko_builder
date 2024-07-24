@@ -42,11 +42,18 @@ check_env() {
   for n in ${NODE_IP[@]}
   do
     ip=$(echo $n | cut -d ':' -f2)
-    ssh -q -o BatchMode=yes -o "StrictHostKeyChecking no" root@"$ip" '/bin/true' &> /dev/null || ssh -q -o BatchMode=yes -o "StrictHostKeyChecking no" bigred@"$ip" '/bin/true'
+    ssh -q -o BatchMode=yes -o "StrictHostKeyChecking no" root@"$ip" '/bin/true' &> /dev/null
     if [[ "$?" != "0" ]]; then
       printf "${RED}Must be configured to use ssh to login to the Rke2 node without a password.${NC}\n"
       printf "${YEL}=====Run this command: ssh-keygen -t rsa -P ''=====${NC}\n"
       printf "${YEL}=====Run this command: ssh-copy-id root@"$ip"=====${NC}\n"
+      exit 1
+    fi
+    ssh -q -o BatchMode=yes -o "StrictHostKeyChecking no" bigred@"$ip" '/bin/true'
+    if [[ "$?" != "0" ]]; then
+      printf "${RED}Must be configured to use ssh to login to the Rke2 node without a password.${NC}\n"
+      printf "${YEL}=====Run this command: ssh-keygen -t rsa -P ''=====${NC}\n"
+      printf "${YEL}=====Run this command: ssh-copy-id bigred@"$ip"=====${NC}\n"
       exit 1
     fi
   done
@@ -91,7 +98,7 @@ ssh root@"$w2ip" mkdir -p /etc/rancher/rke2/ &>> /tmp/rke2_taroko_builder.log
 sed -i "s/masterip/$masterip/g" config_w2.yaml
 scp config_w2.yaml root@"$w2ip":/etc/rancher/rke2/config.yaml &>> /tmp/rke2_taroko_builder.log
 
-ssh bigred@"$w1ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
+ssh sudo@"$w1ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
   curl -sfL https://get.rke2.io --output install.sh
   chmod +x install.sh
   sudo INSTALL_RKE2_CHANNEL="$RKE2_K8S_VERSION" INSTALL_RKE2_TYPE="agent" ./install.sh
@@ -101,7 +108,7 @@ ssh bigred@"$w1ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
 EOF
 kubectl wait node w1 --for=condition=Ready --timeout=300s
 
-ssh bigred@"$w2ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
+ssh sudo@"$w2ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
   curl -sfL https://get.rke2.io --output install.sh
   chmod +x install.sh
   sudo INSTALL_RKE2_CHANNEL="$RKE2_K8S_VERSION" INSTALL_RKE2_TYPE="agent" ./install.sh
