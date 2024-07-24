@@ -197,7 +197,8 @@ cat <<EOF | sudo tee -a /var/lib/rancher/rke2/agent/etc/containerd/config.toml.t
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
   runtime_type = "io.containerd.runsc.v1"
 EOF
-  systemctl restart rke2-server.service
+  sleep 10
+  sudo systemctl restart rke2-server.service
   rm /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
 EOF
 
@@ -208,7 +209,8 @@ cat <<EOF | sudo tee -a /var/lib/rancher/rke2/agent/etc/containerd/config.toml.t
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
   runtime_type = "io.containerd.runsc.v1"
 EOF
-  systemctl restart rke2-agent.service
+  sleep 10
+  sudo systemctl restart rke2-agent.service
   rm /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
 EOF
 
@@ -219,7 +221,8 @@ cat <<EOF | sudo tee -a /var/lib/rancher/rke2/agent/etc/containerd/config.toml.t
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
   runtime_type = "io.containerd.runsc.v1"
 EOF
-  systemctl restart rke2-agent.service
+  sleep 10
+  sudo systemctl restart rke2-agent.service
   rm /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
 EOF
 kubectl wait node m1 --for=condition=Ready --timeout=300s
