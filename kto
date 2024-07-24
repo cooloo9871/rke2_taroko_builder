@@ -186,9 +186,9 @@ ssh bigred@"$w1ip" "echo "$dip dkreg.kube-system" | sudo tee -a /etc/hosts &>/de
 ssh bigred@"$w2ip" "echo "$dip dkreg.kube-system" | sudo tee -a /etc/hosts &>/dev/null"
 
 # create runtimeclass
-scp config.toml.tmpl root@"$masterip":/var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
-scp config.toml.tmpl root@"$w1ip":/var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
-scp config.toml.tmpl root@"$w2ip":/var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+scp config.toml.tmpl root@"$masterip":/var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl &>> /tmp/rke2_taroko_builder.log
+scp config.toml.tmpl root@"$w1ip":/var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl &>> /tmp/rke2_taroko_builder.log
+scp config.toml.tmpl root@"$w2ip":/var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl &>> /tmp/rke2_taroko_builder.log
 ssh root@"$masterip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
   systemctl restart rke2-server.service
   rm /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
