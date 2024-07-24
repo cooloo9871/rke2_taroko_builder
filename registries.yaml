@@ -1,7 +1,4 @@
-configs:
+mirrors:
   "dkreg.kube-system:5000":
-    auth:
-      username: bigred
-      password: bigred
-    tls:
-      insecure_skip_verify: true
+    endpoint:
+      - "http://dkreg.kube-system:5000"
