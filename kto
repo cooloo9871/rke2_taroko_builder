@@ -130,7 +130,7 @@ kubectl wait -n metallb-system pod -l component=controller --for=condition=Ready
 kubectl apply -f wulin/wkload/mlb/kube-mlb-config.yaml &>/dev/null
 
 # install local-path-provisioner
-wget -O - https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.22/deploy/local-path-storage.yaml | kubectl apply -f - &>/dev/null
+wget -q -O - https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.22/deploy/local-path-storage.yaml | kubectl apply -f - &>/dev/null
 kubectl wait -n local-path-storage pod -l app=local-path-provisioner --for=condition=Ready --timeout=180s
 
 # install minio & minio client
