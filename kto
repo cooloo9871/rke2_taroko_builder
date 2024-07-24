@@ -79,7 +79,6 @@ inrke2_master() {
     sudo cp /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/
     sudo cp /opt/rke2/bin/* /usr/local/bin/
     sudo mv /var/lib/rancher/rke2/bin/crictl /usr/local/bin
-    sudo rm /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
 EOF
   kubectl wait node m1 --for=condition=Ready --timeout=300s
 }
@@ -189,8 +188,29 @@ ssh bigred@"$w1ip" "echo "$dip dkreg.kube-system" | sudo tee -a /etc/hosts &>/de
 ssh bigred@"$w2ip" "echo "$dip dkreg.kube-system" | sudo tee -a /etc/hosts &>/dev/null"
 
 # create runtimeclass
+scp config.toml.tmpl root@"$masterip":/var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+scp config.toml.tmpl root@"$w1ip":/var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+scp config.toml.tmpl root@"$w2ip":/var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+ssh root@"$masterip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
+  systemctl restart rke2-server.service
+  rm /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+EOF
+
+ssh root@"$w1ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
+  systemctl restart rke2-agent.service
+  rm /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+EOF
+
+ssh root@"$w2ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
+  systemctl restart rke2-agent.service
+  rm /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+EOF
+kubectl wait node m1 --for=condition=Ready --timeout=300s
+kubectl wait node w1 --for=condition=Ready --timeout=300s
+kubectl wait node w2 --for=condition=Ready --timeout=300s
 kubectl apply -f wulin/runtimeclass/crun.yaml &>/dev/null
 kubectl apply -f wulin/runtimeclass/runsc.yaml &>/dev/null
+
 
 printf "${GRN}[take office]${NC}\n"
 }
