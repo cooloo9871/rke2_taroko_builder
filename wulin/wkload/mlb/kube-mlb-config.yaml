@@ -1,0 +1,22 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: mlb-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 172.22.1.100-172.22.1.150
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: mlb-l2a
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - mlb-pool
+#  nodeSelectors:
+#  - matchLabels:
+#      kubernetes.io/hostname: k1w1
+#  - matchLabels:
+#      kubernetes.io/hostname: k1w2
