@@ -1,0 +1,7 @@
+configs:
+  "dkreg.kube-system":
+    auth:
+      username: bigred
+      password: bigred
+    tls:
+      insecure_skip_verify: false
