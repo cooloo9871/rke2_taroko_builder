@@ -105,8 +105,6 @@ inrke2_worker() {
     sudo systemctl enable --now rke2-agent.service
     sudo cp /opt/rke2/bin/* /usr/local/bin/
 EOF
-  kubectl wait node w1 --for=condition=Ready --timeout=300s
-
   ssh bigred@"$w2ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
     curl -sfL https://get.rke2.io --output install.sh
     chmod +x install.sh
@@ -115,6 +113,7 @@ EOF
     sudo systemctl enable --now rke2-agent.service
     sudo cp /opt/rke2/bin/* /usr/local/bin/
 EOF
+  kubectl wait node w1 --for=condition=Ready --timeout=300s
   kubectl wait node w2 --for=condition=Ready --timeout=300s
 }
 
