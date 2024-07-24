@@ -126,8 +126,8 @@ w2ip=$(echo ${NODE_IP[2]} | cut -d ':' -f2)
 
 # install MetalLB
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.3/config/manifests/metallb-native.yaml &>/dev/null
-kubectl apply -f wulin/wkload/mlb/kube-mlb-config.yaml &>/dev/null
 kubectl wait -n metallb-system pod -l component=controller --for=condition=Ready --timeout=180s
+kubectl apply -f wulin/wkload/mlb/kube-mlb-config.yaml &>/dev/null
 
 # install local-path-provisioner
 wget -O - https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.22/deploy/local-path-storage.yaml | kubectl apply -f - &>/dev/null
