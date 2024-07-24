@@ -19,6 +19,7 @@ Debug() {
 
 # check environment
 check_env() {
+  clear
   printf "${GRN}[Stage: Check Environment]${NC}\n"
   [[ ! -f ./setenvVar ]] && printf "${RED}setenvVar file not found${NC}\n" && exit 1
   var_names=$(cat setenvVar | grep -v '#' | cut -d " " -f 2 | cut -d "=" -f 1 | tr -s "\n" " " | sed 's/[ \t]*$//g')
@@ -41,7 +42,7 @@ check_env() {
   for n in ${NODE_IP[@]}
   do
     ip=$(echo $n | cut -d ':' -f2)
-    ssh -q -o BatchMode=yes -o "StrictHostKeyChecking no" root@"$ip" '/bin/true' &> /dev/null
+    ssh -q -o BatchMode=yes -o "StrictHostKeyChecking no" root@"$ip" '/bin/true' &> /dev/null || ssh -q -o BatchMode=yes -o "StrictHostKeyChecking no" bigred@"$ip" '/bin/true'
     if [[ "$?" != "0" ]]; then
       printf "${RED}Must be configured to use ssh to login to the Rke2 node without a password.${NC}\n"
       printf "${YEL}=====Run this command: ssh-keygen -t rsa -P ''=====${NC}\n"
@@ -59,17 +60,17 @@ masterip=$(echo ${NODE_IP[0]} | cut -d ':' -f2)
 ssh root@"$masterip" mkdir -p /etc/rancher/rke2/ &>> /tmp/rke2_taroko_builder.log
 scp config_m1.yaml root@"$masterip":/etc/rancher/rke2/config.yaml &>> /tmp/rke2_taroko_builder.log
 
-ssh root@"$masterip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
+ssh bigred@"$masterip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
   curl -sfL https://get.rke2.io --output install.sh
   chmod +x install.sh
-  INSTALL_RKE2_CHANNEL="$RKE2_K8S_VERSION" ./install.sh
+  sudo INSTALL_RKE2_CHANNEL="$RKE2_K8S_VERSION" ./install.sh
   export PATH=$PATH:/opt/rke2/bin
-  systemctl enable --now rke2-server
+  sudo systemctl enable --now rke2-server
   mkdir $HOME/.kube
-  cp /etc/rancher/rke2/rke2.yaml .kube/config
-  chown $(id -u):$(id -g) $HOME/.kube/config
-  cp /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/
-  cp /opt/rke2/bin/* /usr/local/bin/
+  sudo cp /etc/rancher/rke2/rke2.yaml .kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+  sudo cp /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/
+  sudo cp /opt/rke2/bin/* /usr/local/bin/
 EOF
 kubectl wait node m1 --for=condition=Ready --timeout=300s
 }
@@ -90,23 +91,23 @@ ssh root@"$w2ip" mkdir -p /etc/rancher/rke2/ &>> /tmp/rke2_taroko_builder.log
 sed -i "s/masterip/$masterip/g" config_w2.yaml
 scp config_w2.yaml root@"$w2ip":/etc/rancher/rke2/config.yaml &>> /tmp/rke2_taroko_builder.log
 
-ssh root@"$w1ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
+ssh bigred@"$w1ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
   curl -sfL https://get.rke2.io --output install.sh
   chmod +x install.sh
-  INSTALL_RKE2_CHANNEL="$RKE2_K8S_VERSION" INSTALL_RKE2_TYPE="agent" ./install.sh
+  sudo INSTALL_RKE2_CHANNEL="$RKE2_K8S_VERSION" INSTALL_RKE2_TYPE="agent" ./install.sh
   export PATH=$PATH:/opt/rke2/bin
-  systemctl enable --now rke2-agent.service
-  cp /opt/rke2/bin/* /usr/local/bin/
+  sudo systemctl enable --now rke2-agent.service
+  sudo cp /opt/rke2/bin/* /usr/local/bin/
 EOF
 kubectl wait node w1 --for=condition=Ready --timeout=300s
 
-ssh root@"$w2ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
+ssh bigred@"$w2ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
   curl -sfL https://get.rke2.io --output install.sh
   chmod +x install.sh
-  INSTALL_RKE2_CHANNEL="$RKE2_K8S_VERSION" INSTALL_RKE2_TYPE="agent" ./install.sh
+  sudo INSTALL_RKE2_CHANNEL="$RKE2_K8S_VERSION" INSTALL_RKE2_TYPE="agent" ./install.sh
   export PATH=$PATH:/opt/rke2/bin
-  systemctl enable --now rke2-agent.service
-  cp /opt/rke2/bin/* /usr/local/bin/
+  sudo systemctl enable --now rke2-agent.service
+  sudo cp /opt/rke2/bin/* /usr/local/bin/
 EOF
 kubectl wait node w2 --for=condition=Ready --timeout=300s
 }
