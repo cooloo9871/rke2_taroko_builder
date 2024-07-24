@@ -42,6 +42,18 @@ if [ "$USER" == "bigred" ]; then
    kubectl delete pod -A --field-selector=status.phase==Failed | grep 'No resources found' &>/dev/null
    [ "$?" != "0" ] && echo "delete all errored pods"
    echo ""
+
+   kubectl describe sa default | grep dkreg &>/dev/null
+   if [ "$?" != "0" ]; then
+     # create dkreg secret (default namespace)
+     sudo podman login --tls-verify=false -u bigred -p bigred dkreg.kube-system:5000 &>/dev/null
+     sudo cp /run/containers/0/auth.json /home/bigred/auth.json; sudo chmod 755 /home/bigred/auth.json
+     sudo podman logout dkreg.kube-system:5000 &>/dev/null
+     kubectl create secret generic dkreg -n default --from-file=.dockerconfigjson=/home/bigred/auth.json --type=kubernetes.io/dockerconfigjson &>/dev/null
+     kubectl patch serviceaccount default -n default -p '{"imagePullSecrets": [{"name": "dkreg"}]}' &>/dev/null
+     echo "dkreg secret ok"
+   fi
+   
 fi
 
 export PATH=/home/bigred/wulin/wkload/usdt/bin:$PATH
