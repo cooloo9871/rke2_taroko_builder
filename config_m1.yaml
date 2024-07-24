@@ -10,3 +10,8 @@ cloud-controller-manager-extra-env: TZ=Asia/Taipei
 kubelet-arg:
   - container-log-max-files=3
   - container-log-max-size=10Mi
+kube-proxy-arg:
+  - proxy-mode=ipvs
+  - ipvs-strict-arp=true
+kube-proxy-extra-mount:
+  - "/lib/modules:/lib/modules:ro"
