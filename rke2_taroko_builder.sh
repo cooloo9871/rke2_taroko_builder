@@ -71,7 +71,7 @@ ssh root@"$masterip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
   cp /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/
   cp /opt/rke2/bin/* /usr/local/bin/
 EOF
-kubectl wait node m1 --for=condition=Ready
+kubectl wait node m1 --for=condition=Ready --timeout=300s
 }
 
 # install rke2 worker
@@ -98,7 +98,7 @@ ssh root@"$w1ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
   systemctl enable --now rke2-agent.service
   cp /opt/rke2/bin/* /usr/local/bin/
 EOF
-kubectl wait node w1 --for=condition=Ready
+kubectl wait node w1 --for=condition=Ready --timeout=300s
 
 ssh root@"$w2ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
   curl -sfL https://get.rke2.io --output install.sh
@@ -108,9 +108,30 @@ ssh root@"$w2ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
   systemctl enable --now rke2-agent.service
   cp /opt/rke2/bin/* /usr/local/bin/
 EOF
-kubectl wait node w2 --for=condition=Ready
+kubectl wait node w2 --for=condition=Ready --timeout=300s
 }
 
+
+taroko() {
+printf "${GRN}[Stage: Deploy Taroko]${NC}\n"
+
+# install minio & minio client
+kubectl create ns s3-system
+kubectl apply -f ~/wulin/wkload/minio/snsd/miniosnsd.yaml &>/dev/null
+kubectl wait -n s3-system pod -l app=miniosnsd --for=condition=Ready --timeout=180s
+sleep 5; [[ "$?" != "0" ]] && echo "Deploy Minio Failed!" && exit 1
+which mc &>/dev/null
+if [ "$?" != "0" ]; then
+   sudo curl -s https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/bin/mc
+   [ "$?" == "0" ] && sudo chmod +x /usr/bin/mc && echo "mc client download ok"
+fi
+mc config host add mios http://172.22.1.150:9000 minio minio123 &>/dev/null
+[[ "$?" != "0" ]] && echo "Add Mios http://172.22.1.150:9000 Failed!" && exit 1
+mc mb mios/kadm &>/dev/null
+mc cp -r /home/bigred/wulin/* mios/kadm/ &>/dev/null
+[ "$?" == "0" ] && echo "wulin to mios/kadm ok"
+
+}
 
 help() {
   cat <<EOF
