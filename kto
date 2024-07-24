@@ -66,7 +66,7 @@ inrke2_master() {
 
   ssh root@"$masterip" mkdir -p /etc/rancher/rke2/ &>> /tmp/rke2_taroko_builder.log
   scp config_m1.yaml root@"$masterip":/etc/rancher/rke2/config.yaml &>> /tmp/rke2_taroko_builder.log
-
+  scp registries.yaml root@"$masterip":/etc/rancher/rke2/registries.yaml &>> /tmp/rke2_taroko_builder.log
   ssh bigred@"$masterip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
     curl -sfL https://get.rke2.io --output install.sh
     chmod +x install.sh
@@ -92,11 +92,11 @@ inrke2_worker() {
   ssh root@"$w1ip" mkdir -p /etc/rancher/rke2/ &>> /tmp/rke2_taroko_builder.log
   sed -i "s/masterip/$masterip/g" config_w1.yaml
   scp config_w1.yaml root@"$w1ip":/etc/rancher/rke2/config.yaml &>> /tmp/rke2_taroko_builder.log
-
+  scp registries.yaml root@"$w1ip":/etc/rancher/rke2/registries.yaml &>> /tmp/rke2_taroko_builder.log
   ssh root@"$w2ip" mkdir -p /etc/rancher/rke2/ &>> /tmp/rke2_taroko_builder.log
   sed -i "s/masterip/$masterip/g" config_w2.yaml
   scp config_w2.yaml root@"$w2ip":/etc/rancher/rke2/config.yaml &>> /tmp/rke2_taroko_builder.log
-
+  scp registries.yaml root@"$w2ip":/etc/rancher/rke2/registries.yaml &>> /tmp/rke2_taroko_builder.log
   ssh bigred@"$w1ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
     curl -sfL https://get.rke2.io --output install.sh
     chmod +x install.sh
@@ -184,23 +184,17 @@ ssh bigred@"$w2ip" "echo "$dip dkreg.kube-system" | sudo tee -a /etc/hosts &>/de
 printf "${GRN}[take office]${NC}\n"
 }
 
-if [[ "$#" < 1 ]]; then
+if [[ -f config_m1.yaml ]]; then
+  Debug
+  source ./setenvVar
+  [[ -f /tmp/pve_vm_manager.log ]] && rm /tmp/pve_vm_manager.log
+  check_env
+  inrke2_master
+  inrke2_worker
+  kubectl label node m1 kadm=node
+  kubectl label node w1 node-role.kubernetes.io/worker=
+  kubectl label node w2 node-role.kubernetes.io/worker=
+  taroko
 else
-  case $1 in
-  create)
-    Debug
-    source ./setenvVar
-    [[ -f /tmp/pve_vm_manager.log ]] && rm /tmp/pve_vm_manager.log
-    check_env
-    inrke2_master
-    inrke2_worker
-    kubectl label node m1 kadm=node
-    kubectl label node w1 node-role.kubernetes.io/worker=
-    kubectl label node w2 node-role.kubernetes.io/worker=
-    taroko
-    ;;
-  *)
-      help
-    ;;
-  esac
+  exit 1
 fi
