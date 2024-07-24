@@ -191,38 +191,30 @@ ssh root@"$w1ip" cp /var/lib/rancher/rke2/agent/etc/containerd/config.toml /var/
 ssh root@"$w2ip" cp /var/lib/rancher/rke2/agent/etc/containerd/config.toml /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
 
 ssh root@"$masterip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
-cat <<EOF | sudo tee -a /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
-[plugins."io.containerd.runtime.v1.linux"]
+echo '[plugins."io.containerd.runtime.v1.linux"]
   shim_debug = true
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
-  runtime_type = "io.containerd.runsc.v1"
-EOF
-  sleep 10
-  sudo systemctl restart rke2-server.service
+  runtime_type = "io.containerd.runsc.v1"' | tee -a /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+  systemctl restart rke2-server.service
   rm /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
 EOF
 
 ssh root@"$w1ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
 cat <<EOF | sudo tee -a /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
-[plugins."io.containerd.runtime.v1.linux"]
+echo '[plugins."io.containerd.runtime.v1.linux"]
   shim_debug = true
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
-  runtime_type = "io.containerd.runsc.v1"
-EOF
-  sleep 10
-  sudo systemctl restart rke2-agent.service
+  runtime_type = "io.containerd.runsc.v1"' | tee -a /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+  systemctl restart rke2-agent.service
   rm /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
 EOF
 
 ssh root@"$w2ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
-cat <<EOF | sudo tee -a /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
-[plugins."io.containerd.runtime.v1.linux"]
+echo '[plugins."io.containerd.runtime.v1.linux"]
   shim_debug = true
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
-  runtime_type = "io.containerd.runsc.v1"
-EOF
-  sleep 10
-  sudo systemctl restart rke2-agent.service
+  runtime_type = "io.containerd.runsc.v1"' | tee -a /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+  systemctl restart rke2-agent.service
   rm /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
 EOF
 kubectl wait node m1 --for=condition=Ready --timeout=300s
