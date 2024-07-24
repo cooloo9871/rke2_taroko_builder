@@ -78,7 +78,7 @@ inrke2_master() {
     sudo chown $(id -u):$(id -g) $HOME/.kube/config
     sudo cp /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/
     sudo cp /opt/rke2/bin/* /usr/local/bin/
-    sudo mv /var/lib/rancher/rke2/bin/crictl /usr/local/bin
+    sudo mv /var/lib/rancher/rke2/bin/crictl /bin
 EOF
   kubectl wait node m1 --for=condition=Ready --timeout=300s
 }
@@ -105,7 +105,7 @@ inrke2_worker() {
     export PATH=$PATH:/opt/rke2/bin
     sudo systemctl enable --now rke2-agent.service
     sudo cp /opt/rke2/bin/* /usr/local/bin/
-    sudo mv /var/lib/rancher/rke2/bin/crictl /usr/local/bin
+    sudo mv /var/lib/rancher/rke2/bin/crictl /bin
 EOF
   ssh bigred@"$w2ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
     curl -sfL https://get.rke2.io --output install.sh
@@ -114,7 +114,7 @@ EOF
     export PATH=$PATH:/opt/rke2/bin
     sudo systemctl enable --now rke2-agent.service
     sudo cp /opt/rke2/bin/* /usr/local/bin/
-    sudo mv /var/lib/rancher/rke2/bin/crictl /usr/local/bin
+    sudo mv /var/lib/rancher/rke2/bin/crictl /bin
 EOF
   kubectl wait node w1 --for=condition=Ready --timeout=300s
   kubectl wait node w2 --for=condition=Ready --timeout=300s
@@ -186,20 +186,39 @@ ssh bigred@"$w1ip" "echo "$dip dkreg.kube-system" | sudo tee -a /etc/hosts &>/de
 ssh bigred@"$w2ip" "echo "$dip dkreg.kube-system" | sudo tee -a /etc/hosts &>/dev/null"
 
 # create runtimeclass
-scp config.toml.tmpl root@"$masterip":/var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl &>> /tmp/rke2_taroko_builder.log
-scp config.toml.tmpl root@"$w1ip":/var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl &>> /tmp/rke2_taroko_builder.log
-scp config.toml.tmpl root@"$w2ip":/var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl &>> /tmp/rke2_taroko_builder.log
+ssh root@"$masterip" cp /var/lib/rancher/rke2/agent/etc/containerd/config.toml /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+ssh root@"$w1ip" cp /var/lib/rancher/rke2/agent/etc/containerd/config.toml /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+ssh root@"$w2ip" cp /var/lib/rancher/rke2/agent/etc/containerd/config.toml /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+
 ssh root@"$masterip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
+cat <<EOF | sudo tee -a /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+[plugins."io.containerd.runtime.v1.linux"]
+  shim_debug = true
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
+  runtime_type = "io.containerd.runsc.v1"
+EOF
   systemctl restart rke2-server.service
   rm /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
 EOF
 
 ssh root@"$w1ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
+cat <<EOF | sudo tee -a /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+[plugins."io.containerd.runtime.v1.linux"]
+  shim_debug = true
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
+  runtime_type = "io.containerd.runsc.v1"
+EOF
   systemctl restart rke2-agent.service
   rm /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
 EOF
 
 ssh root@"$w2ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
+cat <<EOF | sudo tee -a /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
+[plugins."io.containerd.runtime.v1.linux"]
+  shim_debug = true
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
+  runtime_type = "io.containerd.runsc.v1"
+EOF
   systemctl restart rke2-agent.service
   rm /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
 EOF
