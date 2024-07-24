@@ -61,7 +61,7 @@ check_env() {
 
 # install rke2 master
 inrke2_master() {
-printf "${GRN}[Stage: Build Rke2 Master]${NC}\n"
+printf "${GRN}[Stage: Create Rke2 Master]${NC}\n"
 masterip=$(echo ${NODE_IP[0]} | cut -d ':' -f2)
 
 ssh root@"$masterip" mkdir -p /etc/rancher/rke2/ &>> /tmp/rke2_taroko_builder.log
@@ -84,7 +84,7 @@ kubectl wait node m1 --for=condition=Ready --timeout=300s
 
 # install rke2 worker
 inrke2_worker() {
-printf "${GRN}[Stage: Build Rke2 Worker]${NC}\n"
+printf "${GRN}[Stage: Create Rke2 Worker]${NC}\n"
 masterip=$(echo ${NODE_IP[0]} | cut -d ':' -f2)
 w1ip=$(echo ${NODE_IP[1]} | cut -d ':' -f2)
 w2ip=$(echo ${NODE_IP[2]} | cut -d ':' -f2)
