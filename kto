@@ -200,7 +200,6 @@ echo '[plugins."io.containerd.runtime.v1.linux"]
 EOF
 
 ssh root@"$w1ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
-cat <<EOF | sudo tee -a /var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl
 echo '[plugins."io.containerd.runtime.v1.linux"]
   shim_debug = true
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
