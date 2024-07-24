@@ -1,8 +1,11 @@
 # rke2_taroko_builder
 
-## Download zip file
+## Download the zip file and unzip it
+```
+```
 
-## Start VM
+
+## Open the cmd and start vm
 ```
 $ cd Taroko-rke2
 
