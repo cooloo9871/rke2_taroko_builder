@@ -172,7 +172,9 @@ kubectl apply -f wulin/wkload/kadm/kube-kadm-dkreg.yaml &>/dev/null
 kubectl wait -n kube-system pod -l app=kadm --for=condition=Ready --timeout=360s
 kubectl exec kube-kadm -n kube-system -c kadm -- mkdir -p /home/bigred/wulin/{bin,yaml}
 kubectl cp wulin/wkload/kadm/system.sh kube-system/kube-kadm:/home/bigred/wulin/bin/system.sh -c kadm
+kubectl cp ~/.ssh/id_rsa.pub kube-system/kube-kadm:/home/bigred/.ssh/authorized_keys -c kadm &>/dev/null
 kubectl exec kube-kadm -n kube-system -c kadm -- sudo chown bigred:wheel -R /home/bigred/ &>/dev/null
+kubectl exec kube-kadm -n kube-system -c kadm -- sudo chmod 755 -R /home/bigred/ &>/dev/null
 
 # add dkreg.kube-system to /etc/hosts
 dip=$(kubectl get svc -n kube-system | grep dkreg | tr -s ' ' | cut -d ' ' -f3)
