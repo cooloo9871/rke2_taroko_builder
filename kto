@@ -182,6 +182,10 @@ ssh bigred@"$masterip" "echo "$dip dkreg.kube-system" | sudo tee -a /etc/hosts &
 ssh bigred@"$w1ip" "echo "$dip dkreg.kube-system" | sudo tee -a /etc/hosts &>/dev/null"
 ssh bigred@"$w2ip" "echo "$dip dkreg.kube-system" | sudo tee -a /etc/hosts &>/dev/null"
 
+# create runtimeclass
+kubectl apply -f wulin/runtimeclass/crun.yaml &>/dev/null
+kubectl apply -f wulin/runtimeclass/runsc.yaml &>/dev/null
+
 printf "${GRN}[take office]${NC}\n"
 }
 
