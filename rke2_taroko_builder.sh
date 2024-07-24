@@ -98,7 +98,7 @@ ssh root@"$w2ip" mkdir -p /etc/rancher/rke2/ &>> /tmp/rke2_taroko_builder.log
 sed -i "s/masterip/$masterip/g" config_w2.yaml
 scp config_w2.yaml root@"$w2ip":/etc/rancher/rke2/config.yaml &>> /tmp/rke2_taroko_builder.log
 
-ssh sudo@"$w1ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
+ssh bigred@"$w1ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
   curl -sfL https://get.rke2.io --output install.sh
   chmod +x install.sh
   sudo INSTALL_RKE2_CHANNEL="$RKE2_K8S_VERSION" INSTALL_RKE2_TYPE="agent" ./install.sh
@@ -108,7 +108,7 @@ ssh sudo@"$w1ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
 EOF
 kubectl wait node w1 --for=condition=Ready --timeout=300s
 
-ssh sudo@"$w2ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
+ssh bigred@"$w2ip" /bin/bash << EOF &>> /tmp/rke2_taroko_builder.log
   curl -sfL https://get.rke2.io --output install.sh
   chmod +x install.sh
   sudo INSTALL_RKE2_CHANNEL="$RKE2_K8S_VERSION" INSTALL_RKE2_TYPE="agent" ./install.sh
